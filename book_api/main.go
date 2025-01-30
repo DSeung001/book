@@ -1,29 +1,47 @@
 package main
 
 import (
+	"book_api.com/auth"
+	"book_api.com/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-// 책 구조체 정의
-type Book struct {
-	ID     int    `json:"id"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
-	Image  string `json:"image"`
-}
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // 모든 도메인 허용
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-// 샘플 데이터
-var books = []Book{
-	{ID: 1, Title: "Go 프로그래밍", Author: "김고랭", Image: "https://example.com/book1.jpg"},
-	{ID: 2, Title: "Flutter 시작하기", Author: "박플러터", Image: "https://example.com/book2.jpg"},
+		// Preflight 요청 처리 (OPTIONS 요청 허용)
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+
+		c.Next()
+	}
 }
 
 func main() {
 	r := gin.Default()
+	r.Use(CORSMiddleware())
+
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Next()
+	})
+
+	// 정적 파일 제공 (img 폴더 내 이미지 제공)
+	r.Static("/img", "./img")
+
+	// 회원가입 & 로그인 API
+	r.POST("/register", auth.Register)
+	r.POST("/login", auth.Login)
 
 	// 책 목록 API 엔드포인트
 	r.GET("/books", func(c *gin.Context) {
+		books := model.GetBooks()
 		c.JSON(http.StatusOK, books)
 	})
 

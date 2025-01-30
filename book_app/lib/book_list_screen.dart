@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
-import 'book_service.dart';
 import 'book_model.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+// const domain = "localhost";
+const domain = "localhost";
+
+// 비동기 데이터이므로 StatefulWidget을 사용
 class BookListScreen extends StatefulWidget {
   @override
   _BookListScreenState createState() => _BookListScreenState();
@@ -13,7 +18,19 @@ class _BookListScreenState extends State<BookListScreen> {
   @override
   void initState() {
     super.initState();
-    _books = BookService.fetchBooks();
+    _books = fetchBooks();
+  }
+
+  // Future는 비동기 함수를 의미하고, 비동기로 가져온 값을 List<Book>으로 반환
+  Future<List<Book>> fetchBooks() async {
+    final response = await http.get(Uri.parse('http://$domain:8080/books'));
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      return jsonData.map((data) => Book.fromJson(data)).toList();
+    } else {
+      throw Exception('책 데이터를 불러오는데 실패했습니다.');
+    }
   }
 
   @override
@@ -36,12 +53,10 @@ class _BookListScreenState extends State<BookListScreen> {
             itemBuilder: (context, index) {
               final book = snapshot.data![index];
               return ListTile(
-                leading: Image.network(book.image, width: 50, height: 50, fit: BoxFit.cover),
+                leading: Image.network(
+                    book.image, width: 50, height: 50, fit: BoxFit.cover),
                 title: Text(book.title),
                 subtitle: Text(book.author),
-                onTap: () {
-                  // 책 상세 페이지로 이동 (나중에 추가)
-                },
               );
             },
           );
