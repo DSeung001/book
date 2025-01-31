@@ -2,6 +2,7 @@ package main
 
 import (
 	"book_api.com/auth"
+	"book_api.com/config"
 	"book_api.com/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -24,7 +25,10 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-	r := gin.Default()
+	config.InitFirebase()
+
+	r := gin.New()        // gin.Default() 대신 New() 사용 (Recovery를 직접 추가)
+	r.Use(gin.Recovery()) // Panic 발생 시 로그 출력
 	r.Use(CORSMiddleware())
 
 	r.Use(func(c *gin.Context) {

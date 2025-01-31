@@ -1,11 +1,14 @@
 package auth
 
 import (
+	"book_api.com/config"
 	"book_api.com/model"
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
+	"context"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // JWT 시크릿 키
@@ -29,12 +32,32 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "잘못된 요청"})
 		return
 	}
-	storedPassword, exists := model.Users[user.Username]
-	if !exists || storedPassword != user.Password {
+
+	ctx := context.Background()
+	client, err := config.FirebaseApp.Firestore(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Firestore 초기화 실패"})
+		return
+	}
+	defer client.Close()
+
+	// Firestore에서 사용자 조회
+	doc, err := client.Collection("users").Doc(user.Username).Get(ctx)
+	if err != nil || !doc.Exists() {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "아이디 또는 비밀번호가 틀렸습니다."})
 		return
 	}
 
+	// Firestore에서 불러온 데이터 변환
+	var storedUser model.User
+	doc.DataTo(&storedUser)
+
+	if storedUser.Password != user.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "아이디 또는 비밀번호가 틀렸습니다."})
+		return
+	}
+
+	// JWT 토큰 발급
 	token, err := GenerateToken(user.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "토큰 생성 실패"})
