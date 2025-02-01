@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'book_list_screen.dart';
-import 'login_screen.dart';
-import 'register_screen.dart';
+import 'screen/book_list_screen.dart';
+import 'screen/login_screen.dart';
+import 'screen/register_screen.dart';
 
 
 void main() async {

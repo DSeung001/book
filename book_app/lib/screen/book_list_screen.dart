@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'book_model.dart';
+import '../models/book_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'add_book_screen.dart';
 
 // const domain = "localhost";
 const domain = "localhost";
@@ -53,14 +57,35 @@ class _BookListScreenState extends State<BookListScreen> {
             itemBuilder: (context, index) {
               final book = snapshot.data![index];
               return ListTile(
-                leading: Image.network(
-                    book.image, width: 50, height: 50, fit: BoxFit.cover),
+                leading: book.image_url != null && book.image_url!.isNotEmpty
+                    ? Image.network(
+                  book.image_url!,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                )
+                    : Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.grey,
+                  child: Icon(Icons.image),
+                ),
                 title: Text(book.title),
                 subtitle: Text(book.author),
               );
             },
           );
         },
+      ),
+      // 글쓰기 플로팅 버튼 추가
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddBookScreen()),
+          );
+        },
+        child: Icon(Icons.edit), // 글쓰기 혹은 편집 아이콘 사용
       ),
     );
   }

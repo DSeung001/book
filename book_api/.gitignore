@@ -1,3 +1,4 @@
 .idea
 /.idea
 ./config/service-account.json
+/config/service-account.json

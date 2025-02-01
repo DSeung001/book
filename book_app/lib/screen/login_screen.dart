@@ -13,6 +13,25 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  @override
+  void initState() {
+    // 위젯의 초기 상태 설정, 생성자와 다름
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  void _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    if (token != null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => BookListScreen()),
+            (route) => false,
+      );
+    }
+  }
+
   Future<void> login() async {
     final response = await http.post(
       Uri.parse('http://localhost:8080/login'),
@@ -34,9 +53,10 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text("로그인 성공!")),
       );
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => BookListScreen()),
+            (route) => false, // 모든 이전 라우트를 제거합니다.
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -2,8 +2,6 @@ module book_api.com
 
 go 1.22.7
 
-toolchain go1.22.11
-
 require (
 	cel.dev/expr v0.19.2 // indirect
 	cloud.google.com/go v0.118.1 // indirect

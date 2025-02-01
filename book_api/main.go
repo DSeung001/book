@@ -3,6 +3,7 @@ package main
 import (
 	"book_api.com/auth"
 	"book_api.com/config"
+	"book_api.com/handler"
 	"book_api.com/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -44,6 +45,7 @@ func main() {
 	r.POST("/login", auth.Login)
 
 	// 책 목록 API 엔드포인트
+	r.POST("/books", handler.AddBookHandler)
 	r.GET("/books", func(c *gin.Context) {
 		books := model.GetBooks()
 		c.JSON(http.StatusOK, books)
